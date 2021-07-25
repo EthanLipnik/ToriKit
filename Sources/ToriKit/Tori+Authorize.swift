@@ -115,7 +115,7 @@ extension Tori {
         }
     }
     
-    public struct Account: Codable {
+    public struct Account: Codable, Equatable {
         public let ID: String
         public let screenName: String
         

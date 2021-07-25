@@ -6,29 +6,32 @@
 //
 
 import Foundation
+import Combine
 
-public class Tweet: NSObject, Identifiable, Codable {
-    public var id: String = UUID().uuidString
-    public var text: String = ""
-    public var user: User?
-    public var isNSFW: Bool = false
-    public var favorites: Int = 0
-    public var retweets: Int = 0
-    public var retweet: Tweet?
-    public var isFavorited: Bool = false
-    public var isRetweeted: Bool = false
-    public var createdAt: Date = Date()
-    public var source: String = ""
-    public var quote: Tweet?
-    public var quoteID: String?
-    public var reply: Tweet?
-    public var replyID: String?
-    public var replyUser: String?
-    public var language: String = "en"
-    public var translation: String = ""
-    public var entities: Entities?
-    public var extendedEntities: Entities?
-    public var permalinks: [Permalink]?
+public class Tweet: ObservableObject, Identifiable, Codable {
+    @Published public var id: String = UUID().uuidString
+    @Published public var text: String = ""
+    @Published public var user: User?
+    @Published public var isNSFW: Bool = false
+    @Published public var favorites: Int = 0
+    @Published public var retweets: Int = 0
+    @Published public var retweet: Tweet?
+    @Published public var isFavorited: Bool = false
+    @Published public var isRetweeted: Bool = false
+    @Published public var createdAt: Date = Date()
+    @Published public var source: String = ""
+    @Published public var quote: Tweet?
+    @Published public var quoteID: String?
+    @Published public var reply: Tweet?
+    @Published public var replyID: String?
+    @Published public var replyUser: String?
+    @Published public var language: String = "en"
+    @Published public var translation: String = ""
+    @Published public var entities: Entities?
+    @Published public var extendedEntities: Entities?
+    @Published public var permalinks: [Permalink]?
+    
+    public init() {}
     
     public func like() {
         
@@ -70,18 +73,19 @@ public class Tweet: NSObject, Identifiable, Codable {
     }()
     
     func readableTime() -> String {
-        return self.createdAt.formatted(date: .omitted, time: .shortened)
-//        let interval = self.createdAt.timeIntervalSinceNow
-//        if interval.format(using: [.hour, .minute]) == "0h 0m" {
-//            return "1m"
-//        }
-//
-//        let time = interval.format(using: [.day, .minute, .hour])?.replacingOccurrences(of: "0d 0h 0m", with: "1m").replacingOccurrences(of: "0d", with: "").replacingOccurrences(of: "0h", with: "").replacingOccurrences(of: "0m", with: "").replacingOccurrences(of: "0m", with: "")
-//        let components = time?.components(separatedBy: " ").filter({ !$0.isEmpty })
-//        return (components?.first ?? time ?? "—").replacingOccurrences(of: "-", with: "")
+        if #available(iOS 15.0, macOS 12.0, *) {
+            return self.createdAt.formatted(date: .omitted, time: .shortened)
+        } else {
+            let interval = self.createdAt.timeIntervalSinceNow
+            if interval.format(using: [.hour, .minute]) == "0h 0m" {
+                return "1m"
+            }
+
+            let time = interval.format(using: [.day, .minute, .hour])?.replacingOccurrences(of: "0d 0h 0m", with: "1m").replacingOccurrences(of: "0d", with: "").replacingOccurrences(of: "0h", with: "").replacingOccurrences(of: "0m", with: "").replacingOccurrences(of: "0m", with: "")
+            let components = time?.components(separatedBy: " ").filter({ !$0.isEmpty })
+            return (components?.first ?? time ?? "—").replacingOccurrences(of: "-", with: "")
+        }
     }
-    
-    override init() { }
     
     static func == (lhs: Tweet, rhs: Tweet) -> Bool {
         return lhs.id == rhs.id
@@ -116,7 +120,8 @@ public class Tweet: NSObject, Identifiable, Codable {
     
     private enum CodingKeys: String, CodingKey {
         case id = "id_str"
-        case text = "full_text"
+        case fullText = "full_text"
+        case text
         case favorites = "favorite_count"
         case favoritesGB = "favourites_count"
         case retweets = "retweet_count"
@@ -141,7 +146,7 @@ public class Tweet: NSObject, Identifiable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         id = try container.decode(String.self, forKey: .id)
-        text = (try? container.decode(String.self, forKey: .text))?.stringByDecodingHTMLEntities ?? "Couldn't decode"
+        text = ((try? container.decode(String.self, forKey: .fullText)) ?? (try? container.decode(String.self, forKey: .text)))?.stringByDecodingHTMLEntities ?? "Couldn't decode"
         user = try container.decode(User.self, forKey: .user)
         isNSFW = (try? container.decode(Bool.self, forKey: .isNSFW)) ?? false
         favorites = Int(((try? container.decode(Float.self, forKey: .favorites)) ?? (try? container.decode(Float.self, forKey: .favoritesGB))) ?? 0)

@@ -1,6 +1,6 @@
 import Foundation
 import Combine
-import Swifter
+//import Swifter
 
 public class Tori: ObservableObject {
     public var credentials: Credentials
@@ -10,7 +10,7 @@ public class Tori: ObservableObject {
     @Published public var authorizationURL: URL? = nil
     @Published public var user: Account?
     
-    private(set) lazy var swifter: Swifter? = nil
+//    private(set) lazy var swifter: Swifter? = nil
     
     public static var cancellables: Set<AnyCancellable> = []
     
@@ -22,11 +22,11 @@ public class Tori: ObservableObject {
         self.tokenCredentials = tokenCredentials
         self.user = user
         
-        if let accessToken = tokenCredentials?.accessToken, let accessTokenSecret = tokenCredentials?.accessTokenSecret {
-            swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret, oauthToken: accessToken, oauthTokenSecret: accessTokenSecret)
-        } else {
-            swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret)
-        }
+//        if let accessToken = tokenCredentials?.accessToken, let accessTokenSecret = tokenCredentials?.accessTokenSecret {
+//            swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret, oauthToken: accessToken, oauthTokenSecret: accessTokenSecret)
+//        } else {
+//            swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret)
+//        }
     }
     
     public var subscriptions: [String: AnyCancellable] = [:]
