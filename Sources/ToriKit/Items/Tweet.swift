@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-public class Tweet: ObservableObject, Identifiable, Codable {
+public class Tweet: ObservableObject, Identifiable, Codable, Equatable {
     @Published public var id: String = UUID().uuidString
     @Published public var text: String = ""
     @Published public var user: User?
@@ -87,7 +87,7 @@ public class Tweet: ObservableObject, Identifiable, Codable {
         }
     }
     
-    static func == (lhs: Tweet, rhs: Tweet) -> Bool {
+    public static func == (lhs: Tweet, rhs: Tweet) -> Bool {
         return lhs.id == rhs.id
     }
     

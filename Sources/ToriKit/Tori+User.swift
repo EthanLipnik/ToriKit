@@ -65,7 +65,7 @@ extension Tori {
         }
         
         return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.getTimeline(for: .userIdentifer(id), includeEntities: true, success: { json in
+            swifter?.getTimeline(for: .userIdentifer(id), includeEntities: true, tweetMode: .extended, success: { json in
                 guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
                 
                 do {
