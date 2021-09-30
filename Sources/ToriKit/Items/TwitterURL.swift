@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct TwitterURL: Codable {
+public struct TwitterURL: Codable, Hashable {
     public var url: URL?
     public var displayURL: URL?
     public var expandedURL: URL?

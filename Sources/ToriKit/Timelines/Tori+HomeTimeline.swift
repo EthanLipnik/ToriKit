@@ -7,7 +7,7 @@
 
 import Foundation
 import Combine
-//import Swifter
+import Swifter
 
 extension Tori {
 //    public func getHomeTimeline(count: Int = 200) -> Future<[Tweet], Error> {
@@ -26,11 +26,26 @@ extension Tori {
 //        }
 //    }
     public func getHomeTimeline() async throws -> [Tweet] {
-        let request = try createRequest("home_timeline")
+        
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.getHomeTimeline(count: 200, includeEntities: true, tweetMode: .extended, success: { json in
+                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
 
-        let data = try await URLSession.shared.data(for: request).0
-
-        print(try? JSONSerialization.jsonObject(with: data, options: []))
-        return try JSONDecoder().decode([Tweet].self, from: data)
+                do {
+                    let tweets = try JSONDecoder().decode([Tweet].self, from: data)
+                    continuation.resume(returning: tweets)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
+//        let request = try createRequest("home_timeline")
+//
+//        let data = try await URLSession.shared.data(for: request).0
+//
+//        print(try? JSONSerialization.jsonObject(with: data, options: []))
+//        return try JSONDecoder().decode([Tweet].self, from: data)
     }
 }

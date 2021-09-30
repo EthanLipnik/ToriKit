@@ -12,7 +12,7 @@ extension Tori {
         var authorizationParameters = [String: Any]()
         authorizationParameters["oauth_version"] = "1.0"
         authorizationParameters["oauth_signature_method"] =  "HMAC-SHA1"
-        authorizationParameters["oauth_consumer_key"] = credentials.consumerKey
+        authorizationParameters["oauth_consumer_key"] = credentials!.consumerKey
         authorizationParameters["oauth_timestamp"] = String(Int(Date().timeIntervalSince1970))
         authorizationParameters["oauth_nonce"] = UUID().uuidString
         if let accessToken = tokenCredentials?.accessToken {
@@ -44,7 +44,7 @@ extension Tori {
     
     func oauthSignature(for method: String = "GET", url: URL, parameters: [String: Any]) -> String {
         let tokenSecret = tokenCredentials?.accessTokenSecret.urlEncodedString() ?? ""
-        let encodedConsumerSecret = credentials.consumerSecret.urlEncodedString()
+        let encodedConsumerSecret = credentials!.consumerSecret.urlEncodedString()
         let signingKey = "\(encodedConsumerSecret)&\(tokenSecret)"
         let parameterComponents = parameters.urlEncodedQueryString(using: .utf8).components(separatedBy: "&").sorted()
         let parameterString = parameterComponents.joined(separator: "&")

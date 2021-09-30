@@ -17,6 +17,7 @@ extension Tori {
             
             guard !self.authorizationSheetIsPresented else { promise(.failure(URLError(.httpTooManyRedirects))); return }
             
+            print("About to request token")
             self.authorizationSheetIsPresented = true
             self.subscriptions["oAuthRequestTokenSubscriber"] =
             self.oAuthRequestTokenPublisher()
@@ -128,8 +129,8 @@ extension Tori {
     private func oAuthAccessTokenPublisher(temporaryCredentials: TemporaryCredentials, verifier: String) -> AnyPublisher<(TokenCredentials, Account), OAuthError> {
         let request = (baseURLString: "https://api.twitter.com/oauth/access_token",
                        httpMethod: "POST",
-                       consumerKey: credentials.consumerKey,
-                       consumerSecret: credentials.consumerSecret)
+                       consumerKey: credentials!.consumerKey,
+                       consumerSecret: credentials!.consumerSecret)
         
         guard let baseURL = URL(string: request.baseURLString) else {
             return Fail(error: OAuthError.urlError(URLError(.badURL)))
@@ -203,9 +204,9 @@ extension Tori {
         // 1
         let request = (baseURLString: "https://api.twitter.com/oauth/request_token",
                        httpMethod: "POST",
-                       consumerKey: credentials.consumerKey,
-                       consumerSecret: credentials.consumerSecret,
-                       callbackURLString: "\(credentials.callback)://")
+                       consumerKey: credentials!.consumerKey,
+                       consumerSecret: credentials!.consumerSecret,
+                       callbackURLString: "\(credentials!.callback)://")
         
         // 2
         guard let baseURL = URL(string: request.baseURLString) else {
