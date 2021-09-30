@@ -8,6 +8,12 @@
 import Foundation
 
 public struct TwitterURL: Codable, Hashable {
+    public init(url: URL? = nil, displayURL: URL? = nil, expandedURL: URL? = nil) {
+        self.url = url
+        self.displayURL = displayURL
+        self.expandedURL = expandedURL
+    }
+    
     public var url: URL?
     public var displayURL: URL?
     public var expandedURL: URL?
