@@ -6,7 +6,7 @@
 //
 
 import Foundation
-//import Swifter
+import Swifter
 
 extension Tori {
     @discardableResult public func sendTweet(_ text: String) async throws -> Tweet {
@@ -27,6 +27,23 @@ extension Tori {
     
     public func unlike<T>(_ tweet: T) {
         
+    }
+    
+    public func getTweet(_ id: String) async throws -> Tweet {
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.getTweet(for: id, includeEntities: true, tweetMode: .extended, success: { json in
+                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
+
+                do {
+                    let tweets = try JSONDecoder().decode(Tweet.self, from: data)
+                    continuation.resume(returning: tweets)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
     }
 //    public func sendTweet(_ text: String, completion: ((Result<Tweet, Error>) -> Void)? = nil) {
 //        swifter?.postTweet(status: text, tweetMode: .extended, success: { json in
