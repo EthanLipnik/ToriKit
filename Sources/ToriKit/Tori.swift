@@ -29,6 +29,8 @@ public class Tori: ObservableObject {
                 swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret)
             }
         }
+        
+        print("Tori is initialized")
     }
     
     public var subscriptions: [String: AnyCancellable] = [:]

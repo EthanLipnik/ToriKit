@@ -32,7 +32,6 @@ extension Tori {
                     self.subscriptions.removeValue(forKey: "oAuthRequestTokenSubscriber")
                 }, receiveValue: { [weak self] temporaryCredentials in
                     guard let self = self else { return }
-                    
                     guard let authorizationURL = URL(string: "https://api.twitter.com/oauth/authorize?oauth_token=\(temporaryCredentials.requestToken)")
                     else { return }
                     
