@@ -36,12 +36,52 @@ extension Tori {
         
     }
     
-    public func like<T>(_ tweet: T) {
+    public func like<T>(_ tweet: T) async throws {
+        guard let id = (tweet as? Tweet)?.id ?? tweet as? String else { throw URLError(.badURL) }
         
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.favoriteTweet(forID: id, success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
     }
     
-    public func unlike<T>(_ tweet: T) {
+    public func unlike<T>(_ tweet: T) async throws {
+        guard let id = (tweet as? Tweet)?.id ?? tweet as? String else { throw URLError(.badURL) }
         
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.unfavoriteTweet(forID: id, success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
+    }
+    
+    public func retweet<T>(_ tweet: T) async throws {
+        guard let id = (tweet as? Tweet)?.id ?? tweet as? String else { throw URLError(.badURL) }
+        
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.retweetTweet(forID: id, success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
+    }
+    
+    public func unretweet<T>(_ tweet: T) async throws {
+        guard let id = (tweet as? Tweet)?.id ?? tweet as? String else { throw URLError(.badURL) }
+        
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.unretweetTweet(forID: id, success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
     }
     
     public func getTweet(_ id: String) async throws -> Tweet {
