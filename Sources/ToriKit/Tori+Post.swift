@@ -100,6 +100,7 @@ extension Tori {
             })
         })
     }
+    
     public func sendTweet(_ text: String, completion: ((Result<Tweet, Error>) -> Void)? = nil) {
         swifter?.postTweet(status: text, tweetMode: .extended, success: { json in
             guard let data = "\(json)".data(using: .utf8) else { completion?(.failure(URLError(.badServerResponse))); return }
@@ -111,6 +112,25 @@ extension Tori {
             }
         }, failure: { error in
             completion?(.failure(error))
+        })
+    }
+    
+    public func getReplies(_ tweet: Tweet) async throws -> [Tweet] {
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.searchTweet(using: "@" + tweet.user!.username, count: 20, sinceID: tweet.id, tweetMode: .extended, success: { json, response in
+                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
+
+                do {
+                    let tweets = try JSONDecoder().decode([Tweet].self, from: data)
+                        .map({ $0.retweet ?? $0 })
+                        .filter({ $0.replyID == tweet.id })
+                    continuation.resume(returning: tweets)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
         })
     }
 //    
