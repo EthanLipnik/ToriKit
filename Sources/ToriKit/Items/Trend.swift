@@ -7,7 +7,11 @@
 
 import Foundation
 
-public struct Trend: Codable, Equatable, Hashable {
+public struct Trend: Codable, Equatable, Hashable, Identifiable {
+    public var id: String {
+        return url.absoluteString
+    }
+    
     public var name: String
     public var tweetVolume: Int? = nil
     public var url: URL

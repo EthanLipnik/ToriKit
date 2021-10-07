@@ -9,7 +9,7 @@ import Foundation
 import Swifter
 
 extension Tori {
-    @discardableResult public func sendTweet(_ text: String) async throws -> Tweet {
+    @discardableResult public func sendTweet(_ text: String, replyID: String? = nil) async throws -> Tweet {
 //        let request = try createRequest("statuses/update")
 //
 //        let data = try await URLSession.shared.data(for: request).0
@@ -17,7 +17,7 @@ extension Tori {
 //        return try JSONDecoder().decode(Tweet.self, from: data)
         
         return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.postTweet(status: text, tweetMode: .extended, success: { json in
+            swifter?.postTweet(status: text, inReplyToStatusID: replyID, autoPopulateReplyMetadata: replyID != nil, tweetMode: .extended, success: { json in
                 guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
 
                 do {
