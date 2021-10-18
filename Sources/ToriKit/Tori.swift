@@ -26,7 +26,7 @@ public class Tori: ObservableObject {
     
     public func updateAccount(tokenCredentials: TokenCredentials?, account: Account?) {
         self.tokenCredentials = tokenCredentials
-        self.user = user
+        self.user = account
         
         if let credentials = credentials {
             if let accessToken = tokenCredentials?.accessToken, let accessTokenSecret = tokenCredentials?.accessTokenSecret {
