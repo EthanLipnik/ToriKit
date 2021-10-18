@@ -19,6 +19,12 @@ public class Tori: ObservableObject {
     public init(credentials: Credentials? = nil, tokenCredentials: TokenCredentials? = nil, user: Account? = nil) {
         self.credentials = credentials
         
+        updateAccount(tokenCredentials: tokenCredentials, account: user)
+    }
+    
+    public var subscriptions: [String: AnyCancellable] = [:]
+    
+    public func updateAccount(tokenCredentials: TokenCredentials?, account: Account?) {
         self.tokenCredentials = tokenCredentials
         self.user = user
         
@@ -31,7 +37,11 @@ public class Tori: ObservableObject {
         }
     }
     
-    public var subscriptions: [String: AnyCancellable] = [:]
+    public func logout() {
+        self.tokenCredentials = nil
+        self.user = nil
+        self.swifter = nil
+    }
 }
 
 #if canImport(SwiftUI)

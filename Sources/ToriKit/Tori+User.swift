@@ -80,6 +80,42 @@ extension Tori {
         })
     }
     
+    public func follow<T>(_ user: T) async throws {
+        var id: UserIdentifer!
+        
+        if let user = user as? User {
+            id = .id(user.id)
+        } else if let identifer = user as? UserIdentifer {
+            id = identifer
+        }
+        
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.followUser(.userIdentifer(id), success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
+    }
+    
+    public func unfollow<T>(_ user: T) async throws {
+        var id: UserIdentifer!
+        
+        if let user = user as? User {
+            id = .id(user.id)
+        } else if let identifer = user as? UserIdentifer {
+            id = identifer
+        }
+        
+        return try await withCheckedThrowingContinuation({ continuation in
+            swifter?.unfollowUser(.userIdentifer(id), success: { _ in
+                continuation.resume()
+            }, failure: { error in
+                continuation.resume(throwing: error)
+            })
+        })
+    }
+    
 //    public func getUser(_ id: UserIdentifer, completion: @escaping (Result<User, Error>) -> Void) {
 //        swifter?.showUser(id.screenName != nil ? .screenName(id.value) : .id(id.value), includeEntities: true, success: { json in
 //            guard let data = "\(json)".data(using: .utf8) else { completion(.failure(URLError(.badServerResponse))); return }

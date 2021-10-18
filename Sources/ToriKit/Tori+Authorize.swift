@@ -99,7 +99,7 @@ extension Tori {
         case failedToConfirmCallback
     }
     
-    public struct TokenCredentials: Codable {
+    public struct TokenCredentials: Codable, Hashable {
         public let accessToken: String
         public let accessTokenSecret: String
         
@@ -115,13 +115,18 @@ extension Tori {
         }
     }
     
-    public struct Account: Codable, Equatable {
-        public let ID: String
+    public struct Account: Codable, Equatable, Hashable {
+        public let id: String
         public let screenName: String
         
         public static func `optional`(id: String?, screenName: String?) -> Account? {
             guard let id = id, let screenName = screenName else { return nil }
-            return Account(ID: id, screenName: screenName)
+            return Account(id: id, screenName: screenName)
+        }
+        
+        public init(id: String, screenName: String) {
+            self.id = id
+            self.screenName = screenName
         }
     }
     
@@ -181,7 +186,7 @@ extension Tori {
                     
                     return (TokenCredentials(accessToken: oAuthToken,
                                              accessTokenSecret: oAuthTokenSecret),
-                            Account(ID: userID,
+                            Account(id: userID,
                                  screenName: screenName))
                 } else {
                     throw OAuthError.cannotParseResponse
