@@ -9,7 +9,7 @@ import Foundation
 import Swifter
 
 extension Tori {
-    @discardableResult public func sendTweet(_ text: String, replyID: String? = nil) async throws -> Tweet {
+    @discardableResult public func sendTweet(_ text: String, replyID: String? = nil, media: Data? = nil) async throws -> Tweet {
 //        let request = try createRequest("statuses/update")
 //
 //        let data = try await URLSession.shared.data(for: request).0
@@ -17,7 +17,7 @@ extension Tori {
 //        return try JSONDecoder().decode(Tweet.self, from: data)
         
         return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.postTweet(status: text, inReplyToStatusID: replyID, autoPopulateReplyMetadata: replyID != nil, tweetMode: .extended, success: { json in
+            let successHandler: Swifter.SuccessHandler = { json in
                 guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
 
                 do {
@@ -26,9 +26,16 @@ extension Tori {
                 } catch {
                     continuation.resume(throwing: error)
                 }
-            }, failure: { error in
+            }
+            let failureHandler: Swifter.FailureHandler = { error in
                 continuation.resume(throwing: error)
-            })
+            }
+            
+            if let media = media {
+                swifter?.postTweet(status: text, media: media, inReplyToStatusID: replyID, autoPopulateReplyMetadata: replyID != nil, tweetMode: .extended, success: successHandler, failure: failureHandler)
+            } else {
+                swifter?.postTweet(status: text, inReplyToStatusID: replyID, autoPopulateReplyMetadata: replyID != nil, tweetMode: .extended, success: successHandler, failure: failureHandler)
+            }
         })
     }
     

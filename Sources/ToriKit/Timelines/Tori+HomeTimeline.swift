@@ -26,26 +26,25 @@ extension Tori {
 //        }
 //    }
     public func getHomeTimeline() async throws -> [Tweet] {
-        
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.getHomeTimeline(count: 200, includeEntities: true, tweetMode: .extended, success: { json in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
+        let request = try createRequest("home_timeline", parameters: [URLQueryItem(name: "tweet_mode", value: "extended")])
 
-                do {
-                    let tweets = try JSONDecoder().decode([Tweet].self, from: data)
-                    continuation.resume(returning: tweets)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
+        let data = try await URLSession.shared.data(for: request).0
+
+        return try JSONDecoder().decode([Tweet].self, from: data)
+    }
+    
+    public func getHomeTimeline(completion: @escaping (Result<[Tweet], Error>) -> Void) {
+        swifter?.getHomeTimeline(count: 200, includeEntities: true, tweetMode: .extended, success: { json in
+            guard let data = "\(json)".data(using: .utf8) else { completion(.failure(URLError(.badServerResponse))); return }
+
+            do {
+                let tweets = try JSONDecoder().decode([Tweet].self, from: data)
+                completion(.success(tweets))
+            } catch {
+                completion(.failure(error))
+            }
+        }, failure: { error in
+            completion(.failure(error))
         })
-//        let request = try createRequest("home_timeline")
-//
-//        let data = try await URLSession.shared.data(for: request).0
-//
-//        print(try? JSONSerialization.jsonObject(with: data, options: []))
-//        return try JSONDecoder().decode([Tweet].self, from: data)
     }
 }
