@@ -65,7 +65,7 @@ public class Tweet: ObservableObject, Identifiable, Codable, Equatable {
     }
     
     public lazy var url: URL = {
-        if let username = user?.username {
+        if let username = user?.screenName {
             return URL(string: "https://twitter.com/\(username)/status/\(id)") ?? URL(string: "https://twitter.com")!
         } else {
             return URL(string: "https://twitter.com")!

@@ -6,155 +6,82 @@
 //
 
 import Foundation
-import Swifter
 
 extension Tori {
-    
-    public struct UserIdentifer {
-        public var id: String?
-        public var screenName: String?
-        
-        public static func screenName(_ screenName: String) -> UserIdentifer {
-            return UserIdentifer.init(screenName: screenName)
-        }
-        public static func id(_ id: String) -> UserIdentifer {
-            return UserIdentifer.init(id: id)
-        }
-        
-        public var value: String {
-            return id ?? screenName!
-        }
-    }
-    
     public func getUser(_ id: UserIdentifer) async throws -> User {
-//        let request = try createRequest("show/user")
-//
-//        let data = try await URLSession.shared.data(for: request).0
-//
-//        return try JSONDecoder().decode(User.self, from: data)
+        var parameters: [URLQueryItem] = [URLQueryItem(name: "include_entities", value: "true")]
         
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.showUser(.userIdentifer(id), includeEntities: true, success: { json in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
-                
-                do {
-                    let user = try JSONDecoder().decode(User.self, from: data)
-                    continuation.resume(returning: user)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+        switch id {
+        case .id(let id):
+            parameters.append(URLQueryItem(name: "user_id", value: id))
+        case .screenName(let screenName):
+            parameters.append(URLQueryItem(name: "screen_name", value: screenName))
+        }
+        
+        let request = try createRequest("users",
+                                        api: "show",
+                                        parameters: parameters)
+
+        let data = try await URLSession.shared.data(for: request).0
+        return try JSONDecoder().decode(User.self, from: data)
     }
     
-    public func getUserTweets<T>(_ user: T, count: Int = 50, includeRetweets: Bool = true, excludeReplies: Bool = false) async throws -> [Tweet] {
-//        let request = try createRequest("user_timeline")
-//
-//        let data = try await URLSession.shared.data(for: request).0
-//
-//        return try JSONDecoder().decode([Tweet].self, from: data)
+    public func getUserTweets<T>(_ user: T, count: Int = 50, tweetMode: TweetMode = .extended, includeRetweets: Bool = true, excludeReplies: Bool = false) async throws -> [Tweet] {
         
-        var id: UserIdentifer!
+        var parameters: [URLQueryItem] = [URLQueryItem(name: "count",
+                                                       value: "\(count)"),
+                                          URLQueryItem(name: "include_rts",
+                                                       value: "\(includeRetweets)"),
+                                          URLQueryItem(name: "exclude_replies",
+                                                       value: "\(excludeReplies)"),
+                                          URLQueryItem(name: "tweet_mode",
+                                                       value: tweetMode.rawValue)]
         
         if let user = user as? User {
-            id = .id(user.id)
+            parameters.append(URLQueryItem(name: "user_id", value: user.id))
         } else if let identifer = user as? UserIdentifer {
-            id = identifer
+            parameters.append(identifer.queryItem())
         }
         
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.getTimeline(for: .userIdentifer(id), includeEntities: true, tweetMode: .extended, success: { json in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
-                
-                do {
-                    let tweets = try JSONDecoder().decode([Tweet].self, from: data)
-                    continuation.resume(returning: tweets)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+        let request = try createRequest("statuses",
+                                        api: "user_timeline",
+                                        parameters: parameters)
+
+        let data = try await URLSession.shared.data(for: request).0
+        return try JSONDecoder().decode([Tweet].self, from: data)
     }
     
     public func follow<T>(_ user: T) async throws {
-        var id: UserIdentifer!
+        var parameters: [URLQueryItem] = []
         
         if let user = user as? User {
-            id = .id(user.id)
+            parameters.append(URLQueryItem(name: "user_id", value: user.id))
         } else if let identifer = user as? UserIdentifer {
-            id = identifer
+            parameters.append(identifer.queryItem())
         }
         
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.followUser(.userIdentifer(id), success: { _ in
-                continuation.resume()
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+        let request = try createRequest("friendships",
+                                        api: "create",
+                                        parameters: parameters,
+                                        method: .post)
+        
+        let _ = try await URLSession.shared.data(for: request).0
     }
     
     public func unfollow<T>(_ user: T) async throws {
-        var id: UserIdentifer!
+        var parameters: [URLQueryItem] = []
         
         if let user = user as? User {
-            id = .id(user.id)
+            parameters.append(URLQueryItem(name: "user_id", value: user.id))
         } else if let identifer = user as? UserIdentifer {
-            id = identifer
+            parameters.append(identifer.queryItem())
         }
         
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.unfollowUser(.userIdentifer(id), success: { _ in
-                continuation.resume()
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
-    }
-    
-//    public func getUser(_ id: UserIdentifer, completion: @escaping (Result<User, Error>) -> Void) {
-//        swifter?.showUser(id.screenName != nil ? .screenName(id.value) : .id(id.value), includeEntities: true, success: { json in
-//            guard let data = "\(json)".data(using: .utf8) else { completion(.failure(URLError(.badServerResponse))); return }
-//
-//            do {
-//                completion(.success(try JSONDecoder().decode(User.self, from: data)))
-//            } catch {
-//                completion(.failure(error))
-//            }
-//        }, failure: { error in
-//            completion(.failure(error))
-//        })
-//    }
-//    
-//    public func getUserTweets<T>(_ user: T, count: Int = 50, includeRetweets: Bool = true, excludeReplies: Bool = false, completion: @escaping (Result<[Tweet], Error>) -> Void) {
-//        guard let userID = (user as? User)?.id ?? user as? String else { return }
-//        
-//        swifter?.getTimeline(for: .id(userID), count: count, excludeReplies: excludeReplies, includeRetweets: includeRetweets, includeEntities: true, tweetMode: .extended, success: { json in
-//            guard let data = "\(json)".data(using: .utf8) else { completion(.failure(URLError(.badServerResponse))); return }
-//            
-//            do {
-//                completion(.success(try JSONDecoder().decode([Tweet].self, from: data)))
-//            } catch {
-//                completion(.failure(error))
-//            }
-//        }, failure: { error in
-//            completion(.failure(error))
-//        })
-//    }
-}
-
-extension UserTag {
-    static func userIdentifer(_ userIdentifer: Tori.UserIdentifer) -> UserTag {
-        if let id = userIdentifer.id {
-            return .id(id)
-        } else if let screenName = userIdentifer.screenName {
-            return .screenName(screenName)
-        } else {
-            fatalError()
-        }
+        let request = try createRequest("friendships",
+                                        api: "destroy",
+                                        parameters: parameters,
+                                        method: .post)
+        
+        let _ = try await URLSession.shared.data(for: request).0
     }
 }

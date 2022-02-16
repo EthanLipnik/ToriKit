@@ -8,9 +8,11 @@
 import Foundation
 
 extension Tori {
-    func createRequest(_ api: String, parameters: [URLQueryItem] = []) throws -> URLRequest {
-        let request = (baseURLString: "https://api.twitter.com/1.1/statuses/\(api).json",
-                       httpMethod: "GET",
+    func createRequest(_ base: String,
+                       api: String,
+                       parameters: [URLQueryItem] = [],
+                       method: HTTPMethod = .get) throws -> URLRequest {
+        let request = (baseURLString: "https://api.twitter.com/1.1/\(base)/\(api).json",
                        consumerKey: credentials!.consumerKey,
                        consumerSecret: credentials!.consumerSecret)
         
@@ -31,7 +33,7 @@ extension Tori {
             URLQueryItem(name: "oauth_version", value: "1.0")
         ] + parameters
         
-        let signature = oAuthSignature(httpMethod: request.httpMethod,
+        let signature = oAuthSignature(httpMethod: method.rawValue,
                                        baseURLString: request.baseURLString,
                                        parameters: urlParameters,
                                        consumerSecret: request.consumerSecret,
@@ -44,7 +46,7 @@ extension Tori {
         guard let url = urlRequestComponents?.url else { throw URLError(.badURL) }
         
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = request.httpMethod
+        urlRequest.httpMethod = method.rawValue
         urlRequest.setValue(oAuthAuthorizationHeader(parameters: urlParameters),
                             forHTTPHeaderField: "Authorization")
         urlRequest.setValue("application/x-www-form-urlencoded;charset=UTF-8", forHTTPHeaderField: "Content-Type")

@@ -18,10 +18,6 @@ let package = Package(
         .package(
             url: "https://github.com/kishikawakatsumi/KeychainAccess.git",
             from: "4.2.2"
-        ),
-        .package(
-            url: "https://github.com/mattdonnelly/Swifter.git",
-            from: "2.5.0"
         )
     ],
     targets: [
@@ -29,7 +25,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "ToriKit",
-            dependencies: ["KeychainAccess", "Swifter"]),
+            dependencies: ["KeychainAccess"]),
         .testTarget(
             name: "ToriKitTests",
             dependencies: ["ToriKit"]),

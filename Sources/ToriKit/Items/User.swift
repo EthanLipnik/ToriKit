@@ -10,7 +10,7 @@ import Foundation
 public class User: NSObject, Identifiable, Codable {
     public var id: String = UUID().uuidString
     public var name: String
-    public var username: String
+    public var screenName: String
     public var picture: URL
     public var banner: URL?
     public var profileDescription: String
@@ -23,13 +23,13 @@ public class User: NSObject, Identifiable, Codable {
     public var isPrivate: Bool
     
     public var url: URL {
-        return URL(string: "https://twitter.com/\(username)")!
+        return URL(string: "https://twitter.com/\(screenName)")!
     }
     
     enum CodingKeys: String, CodingKey {
         case id = "id_str"
         case name
-        case username = "screen_name"
+        case screenName = "screen_name"
         case profileDescription = "description"
         case picture = "profile_image_url_https"
         case location
@@ -47,7 +47,7 @@ public class User: NSObject, Identifiable, Codable {
         
         id = try container.decode(String.self, forKey: .id)
         name = try container.decode(String.self, forKey: .name)
-        username = try container.decode(String.self, forKey: .username)
+        screenName = try container.decode(String.self, forKey: .screenName)
         profileDescription = try container.decode(String.self, forKey: .profileDescription)
         picture = try container.decode(URL.self, forKey: .picture)
         location = try container.decode(String.self, forKey: .location)

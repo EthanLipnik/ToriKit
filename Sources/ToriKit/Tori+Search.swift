@@ -8,38 +8,38 @@
 import Foundation
 
 extension Tori {
-    public func search(_ query: String) async throws -> [Tweet] {
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.searchTweet(using: query, count: 200, tweetMode: .extended, success: { json, searchMetadata in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
-
-                do {
-                    let tweets = try JSONDecoder().decode([Tweet].self, from: data)
-                        .filter({ $0.retweet == nil })
-                    continuation.resume(returning: tweets)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+    
+    public func search(_ query: String, count: Int = 50, tweetMode: TweetMode = .extended, sinceID: String? = nil) async throws -> SearchTweetsResults {
+        var parameters = [
+            URLQueryItem(name: "q", value: query),
+            URLQueryItem(name: "count", value: "\(count)"),
+            URLQueryItem(name: "tweet_mode", value: tweetMode.rawValue),
+            URLQueryItem(name: "include_entities", value: "true")
+        ]
+        
+        if let sinceID = sinceID {
+            parameters.append(URLQueryItem(name: "since_id", value: sinceID))
+        }
+        
+        let request = try createRequest("search",
+                                        api: "tweets",
+                                        parameters: parameters)
+        
+        let data = try await URLSession.shared.data(for: request).0
+        print(try JSONSerialization.jsonObject(with: data, options: []))
+        return try JSONDecoder().decode(SearchTweetsResults.self, from: data)
     }
     
-    public func search(_ query: String) async throws -> [User] {
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.searchUsers(using: query, count: 200, success: { json in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
-
-                do {
-                    let users = try JSONDecoder().decode([User].self, from: data)
-                    continuation.resume(returning: users)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+    public func search(_ query: String, count: Int = 50) async throws -> [User] {
+        let request = try createRequest("users",
+                                        api: "search",
+                                        parameters: [
+                                            URLQueryItem(name: "q", value: query),
+                                            URLQueryItem(name: "count", value: "\(count)"),
+                                            URLQueryItem(name: "include_entities", value: "true")
+                                        ])
+        
+        let data = try await URLSession.shared.data(for: request).0
+        return try JSONDecoder().decode([User].self, from: data)
     }
 }

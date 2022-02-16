@@ -9,19 +9,14 @@ import Foundation
 
 extension Tori {
     public func getTrends() async throws -> [Trend] {
-        return try await withCheckedThrowingContinuation({ continuation in
-            swifter?.getClosestTrends(for: (0, 0), success: { json in
-                guard let data = "\(json)".data(using: .utf8) else { continuation.resume(throwing: URLError(.badServerResponse)); return }
-                
-                do {
-                    let trends = try JSONDecoder().decode([Trend].self, from: data)
-                    continuation.resume(returning: trends)
-                } catch {
-                    continuation.resume(throwing: error)
-                }
-            }, failure: { error in
-                continuation.resume(throwing: error)
-            })
-        })
+        let request = try createRequest("trends",
+                                        api: "closest",
+                                        parameters: [
+                                            URLQueryItem(name: "lat", value: "\(0)"),
+                                            URLQueryItem(name: "long", value: "\(0)")
+                                        ])
+
+        let data = try await URLSession.shared.data(for: request).0
+        return try JSONDecoder().decode([Trend].self, from: data)
     }
 }

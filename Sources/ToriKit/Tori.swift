@@ -1,6 +1,5 @@
 import Foundation
 import Combine
-import Swifter
 
 public class Tori: ObservableObject {
     public var credentials: Credentials?
@@ -9,8 +8,6 @@ public class Tori: ObservableObject {
     @Published public var authorizationSheetIsPresented = false
     @Published public var authorizationURL: URL? = nil
     @Published public var user: Account?
-    
-    private(set) lazy var swifter: Swifter? = nil
     
     public static var cancellables: Set<AnyCancellable> = []
     
@@ -27,20 +24,11 @@ public class Tori: ObservableObject {
     public func updateAccount(tokenCredentials: TokenCredentials?, account: Account?) {
         self.tokenCredentials = tokenCredentials
         self.user = account
-        
-        if let credentials = credentials {
-            if let accessToken = tokenCredentials?.accessToken, let accessTokenSecret = tokenCredentials?.accessTokenSecret {
-                swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret, oauthToken: accessToken, oauthTokenSecret: accessTokenSecret)
-            } else {
-                swifter = Swifter(consumerKey: credentials.consumerKey, consumerSecret: credentials.consumerSecret)
-            }
-        }
     }
     
     public func logout() {
         self.tokenCredentials = nil
         self.user = nil
-        self.swifter = nil
     }
 }
 
